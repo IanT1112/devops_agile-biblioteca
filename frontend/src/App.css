@@ -325,3 +325,25 @@ td {
     padding: 14px;
   }
 }
+
+
+
+.message {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.message.success {
+  background: #e8f8ef;
+  color: #128248;
+  border: 1px solid #b8ebcf;
+}
+
+.message.error {
+  background: #ffe9e9;
+  color: #b42318;
+  border: 1px solid #ffc9c9;
+}

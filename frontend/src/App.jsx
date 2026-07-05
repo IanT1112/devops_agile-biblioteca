@@ -27,6 +27,11 @@ function App() {
     estado: "Disponible",
   });
 
+  const [mensaje, setMensaje] = useState({
+  tipo: "",
+  texto: "",
+});
+
   const obtenerLibros = async () => {
     try {
       const respuesta = await axios.get(API_URL);
@@ -70,26 +75,44 @@ function App() {
   };
 
   const guardarLibro = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formulario.titulo || !formulario.autor || !formulario.categoria) {
-      alert("Completa todos los campos.");
-      return;
+  if (!formulario.titulo || !formulario.autor || !formulario.categoria) {
+    setMensaje({
+      tipo: "error",
+      texto: "Completa todos los campos antes de guardar.",
+    });
+    return;
+  }
+
+  try {
+    if (modoEdicion) {
+      await axios.put(`${API_URL}/${libroEditando.id}`, formulario);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro actualizado correctamente.",
+      });
+    } else {
+      await axios.post(API_URL, formulario);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro registrado correctamente.",
+      });
     }
 
-    try {
-      if (modoEdicion) {
-        await axios.put(`${API_URL}/${libroEditando.id}`, formulario);
-      } else {
-        await axios.post(API_URL, formulario);
-      }
+    limpiarFormulario();
+    obtenerLibros();
+  } catch (error) {
+    console.error("Error al guardar libro:", error);
 
-      limpiarFormulario();
-      obtenerLibros();
-    } catch (error) {
-      console.error("Error al guardar libro:", error);
-    }
-  };
+    setMensaje({
+      tipo: "error",
+      texto: "Ocurrió un error al guardar el libro.",
+    });
+  }
+};
 
   const editarLibro = (libro) => {
     setModoEdicion(true);
@@ -184,6 +207,12 @@ function App() {
             <h2>{modoEdicion ? "Editar libro" : "Registrar libro"}</h2>
             <Plus size={20} />
           </div>
+
+          {mensaje.texto && (
+            <div className={`message ${mensaje.tipo}`}>
+              {mensaje.texto}
+            </div>
+          )}
 
           <label>
             Título
