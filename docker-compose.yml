@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./backend
+    container_name: biblioteca_backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/biblioteca.db:/app/biblioteca.db
+
+  frontend:
+    build: ./frontend
+    container_name: biblioteca_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
