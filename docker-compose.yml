@@ -4,8 +4,7 @@ services:
     container_name: biblioteca_backend
     ports:
       - "3001:3001"
-    volumes:
-      - ./backend/biblioteca.db:/app/biblioteca.db
+
 
   frontend:
     build:
