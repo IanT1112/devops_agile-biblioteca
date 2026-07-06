@@ -9,6 +9,8 @@ import {
   Trash2,
   Pencil,
   RefreshCcw,
+  Eye,
+  X,
 } from "lucide-react";
 import "./App.css";
 
@@ -19,6 +21,7 @@ function App() {
   const [busqueda, setBusqueda] = useState("");
   const [modoEdicion, setModoEdicion] = useState(false);
   const [libroEditando, setLibroEditando] = useState(null);
+  const [libroDetalle, setLibroDetalle] = useState(null);
 
   const [formulario, setFormulario] = useState({
     titulo: "",
@@ -314,17 +317,27 @@ function App() {
                       </span>
                     </td>
                     <td>
-                      <div className="actions">
-                        <button onClick={() => editarLibro(libro)} title="Editar">
-                          <Pencil size={16} />
-                        </button>
-                        <button onClick={() => cambiarEstado(libro)} title="Cambiar estado">
-                          <RefreshCcw size={16} />
-                        </button>
-                        <button onClick={() => eliminarLibro(libro.id)} title="Eliminar">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    <div className="actions">
+                      <button className="action-view" onClick={() => setLibroDetalle(libro)}>
+                        <Eye size={15} />
+                        Ver
+                      </button>
+
+                      <button className="action-edit" onClick={() => editarLibro(libro)}>
+                        <Pencil size={15} />
+                        Editar
+                      </button>
+
+                      <button className="action-status" onClick={() => cambiarEstado(libro)}>
+                        <RefreshCcw size={15} />
+                        {libro.estado === "Disponible" ? "Prestar" : "Devolver"}
+                      </button>
+
+                      <button className="action-delete" onClick={() => eliminarLibro(libro.id)}>
+                        <Trash2 size={15} />
+                        Eliminar
+                      </button>
+                    </div>
                     </td>
                   </tr>
                 ))}
@@ -341,6 +354,41 @@ function App() {
           </div>
         </section>
       </section>
+
+      {libroDetalle && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+              <div className="modal-header">
+                <h2>Detalle del libro</h2>
+                <button onClick={() => setLibroDetalle(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="detail-list">
+                <p>
+                  <strong>ID:</strong> {libroDetalle.id}
+                </p>
+                <p>
+                  <strong>Título:</strong> {libroDetalle.titulo}
+                </p>
+                <p>
+                  <strong>Autor:</strong> {libroDetalle.autor}
+                </p>
+                <p>
+                  <strong>Categoría:</strong> {libroDetalle.categoria}
+                </p>
+                <p>
+                  <strong>Estado:</strong> {libroDetalle.estado}
+                </p>
+              </div>
+
+              <button className="primary-button" onClick={() => setLibroDetalle(null)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
     </main>
   );
 }
