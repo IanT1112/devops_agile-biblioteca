@@ -9,6 +9,8 @@ import {
   Trash2,
   Pencil,
   RefreshCcw,
+  Eye,
+  X,
 } from "lucide-react";
 import "./App.css";
 
@@ -19,6 +21,8 @@ function App() {
   const [busqueda, setBusqueda] = useState("");
   const [modoEdicion, setModoEdicion] = useState(false);
   const [libroEditando, setLibroEditando] = useState(null);
+  const [libroDetalle, setLibroDetalle] = useState(null);
+  const [libroEliminar, setLibroEliminar] = useState(null);
 
   const [formulario, setFormulario] = useState({
     titulo: "",
@@ -26,6 +30,11 @@ function App() {
     categoria: "",
     estado: "Disponible",
   });
+
+  const [mensaje, setMensaje] = useState({
+  tipo: "",
+  texto: "",
+});
 
   const obtenerLibros = async () => {
     try {
@@ -70,26 +79,44 @@ function App() {
   };
 
   const guardarLibro = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formulario.titulo || !formulario.autor || !formulario.categoria) {
-      alert("Completa todos los campos.");
-      return;
+  if (!formulario.titulo || !formulario.autor || !formulario.categoria) {
+    setMensaje({
+      tipo: "error",
+      texto: "Completa todos los campos antes de guardar.",
+    });
+    return;
+  }
+
+  try {
+    if (modoEdicion) {
+      await axios.put(`${API_URL}/${libroEditando.id}`, formulario);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro actualizado correctamente.",
+      });
+    } else {
+      await axios.post(API_URL, formulario);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro registrado correctamente.",
+      });
     }
 
-    try {
-      if (modoEdicion) {
-        await axios.put(`${API_URL}/${libroEditando.id}`, formulario);
-      } else {
-        await axios.post(API_URL, formulario);
-      }
+    limpiarFormulario();
+    obtenerLibros();
+  } catch (error) {
+    console.error("Error al guardar libro:", error);
 
-      limpiarFormulario();
-      obtenerLibros();
-    } catch (error) {
-      console.error("Error al guardar libro:", error);
-    }
-  };
+    setMensaje({
+      tipo: "error",
+      texto: "Ocurrió un error al guardar el libro.",
+    });
+  }
+};
 
   const editarLibro = (libro) => {
     setModoEdicion(true);
@@ -102,15 +129,29 @@ function App() {
     });
   };
 
-  const eliminarLibro = async (id) => {
-    const confirmar = confirm("¿Seguro que deseas eliminar este libro?");
-    if (!confirmar) return;
+  const confirmarEliminar = (libro) => {
+  setLibroEliminar(libro);
+};
 
+  const eliminarLibro = async () => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${libroEliminar.id}`);
+
+      setLibroEliminar(null);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro eliminado correctamente.",
+      });
+
       obtenerLibros();
     } catch (error) {
-      console.error("Error al eliminar libro:", error);
+      console.error(error);
+
+      setMensaje({
+        tipo: "error",
+        texto: "No fue posible eliminar el libro.",
+      });
     }
   };
 
@@ -184,6 +225,12 @@ function App() {
             <h2>{modoEdicion ? "Editar libro" : "Registrar libro"}</h2>
             <Plus size={20} />
           </div>
+
+          {mensaje.texto && (
+            <div className={`message ${mensaje.tipo}`}>
+              {mensaje.texto}
+            </div>
+          )}
 
           <label>
             Título
@@ -285,17 +332,27 @@ function App() {
                       </span>
                     </td>
                     <td>
-                      <div className="actions">
-                        <button onClick={() => editarLibro(libro)} title="Editar">
-                          <Pencil size={16} />
-                        </button>
-                        <button onClick={() => cambiarEstado(libro)} title="Cambiar estado">
-                          <RefreshCcw size={16} />
-                        </button>
-                        <button onClick={() => eliminarLibro(libro.id)} title="Eliminar">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    <div className="actions">
+                      <button className="action-view" onClick={() => setLibroDetalle(libro)}>
+                        <Eye size={15} />
+                        Ver
+                      </button>
+
+                      <button className="action-edit" onClick={() => editarLibro(libro)}>
+                        <Pencil size={15} />
+                        Editar
+                      </button>
+
+                      <button className="action-status" onClick={() => cambiarEstado(libro)}>
+                        <RefreshCcw size={15} />
+                        {libro.estado === "Disponible" ? "Prestar" : "Devolver"}
+                      </button>
+
+                      <button className="action-delete" onClick={() => confirmarEliminar(libro)}>
+                        <Trash2 size={15} />
+                        Eliminar
+                      </button>
+                    </div>
                     </td>
                   </tr>
                 ))}
@@ -312,6 +369,84 @@ function App() {
           </div>
         </section>
       </section>
+
+      {libroDetalle && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+              <div className="modal-header">
+                <h2>Detalle del libro</h2>
+                <button onClick={() => setLibroDetalle(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="detail-list">
+                <p>
+                  <strong>ID:</strong> {libroDetalle.id}
+                </p>
+                <p>
+                  <strong>Título:</strong> {libroDetalle.titulo}
+                </p>
+                <p>
+                  <strong>Autor:</strong> {libroDetalle.autor}
+                </p>
+                <p>
+                  <strong>Categoría:</strong> {libroDetalle.categoria}
+                </p>
+                <p>
+                  <strong>Estado:</strong> {libroDetalle.estado}
+                </p>
+              </div>
+
+              <button className="primary-button" onClick={() => setLibroDetalle(null)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {libroEliminar && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+
+              <div className="modal-header">
+                <h2>Eliminar libro</h2>
+              </div>
+
+              <p>
+                ¿Seguro que deseas eliminar
+                <strong> {libroEliminar.titulo}</strong>?
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  marginTop: "25px",
+                }}
+              >
+
+                <button
+                  className="secondary-button"
+                  onClick={() => setLibroEliminar(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="primary-button"
+                  onClick={eliminarLibro}
+                >
+                  Eliminar
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        
     </main>
   );
 }
