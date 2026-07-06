@@ -5,7 +5,6 @@ services:
     ports:
       - "3001:3001"
 
-
   frontend:
     build:
       context: ./frontend
@@ -16,3 +15,32 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: biblioteca_cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  prometheus:
+    image: prom/prometheus
+    container_name: biblioteca_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana
+    container_name: biblioteca_grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
