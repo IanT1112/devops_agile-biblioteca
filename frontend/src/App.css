@@ -320,8 +320,16 @@ td {
     padding: 24px;
   }
 
-  td,
+td,
   th {
     padding: 14px;
   }
+} 
+
+.footer {
+  margin-top: 32px;
+  padding: 20px;
+  text-align: center;
+  color: #65748b;
+  font-size: 14px;
 }

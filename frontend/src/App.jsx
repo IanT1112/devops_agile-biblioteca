@@ -309,11 +309,16 @@ function App() {
                 )}
               </tbody>
             </table>
-          </div>
-        </section>
+        </div>
       </section>
-    </main>
-  );
+    </section>
+    <footer className="footer">
+      <p>
+        Proyecto DevOps - Biblioteca Virtual | Desarrollado por Ian Tapia y Paolo Guerrero
+      </p>
+    </footer>
+  </main>
+);
 }
 
 export default App;
