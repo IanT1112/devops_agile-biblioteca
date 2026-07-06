@@ -22,6 +22,7 @@ function App() {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [libroEditando, setLibroEditando] = useState(null);
   const [libroDetalle, setLibroDetalle] = useState(null);
+  const [libroEliminar, setLibroEliminar] = useState(null);
 
   const [formulario, setFormulario] = useState({
     titulo: "",
@@ -128,15 +129,29 @@ function App() {
     });
   };
 
-  const eliminarLibro = async (id) => {
-    const confirmar = confirm("¿Seguro que deseas eliminar este libro?");
-    if (!confirmar) return;
+  const confirmarEliminar = (libro) => {
+  setLibroEliminar(libro);
+};
 
+  const eliminarLibro = async () => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${libroEliminar.id}`);
+
+      setLibroEliminar(null);
+
+      setMensaje({
+        tipo: "success",
+        texto: "Libro eliminado correctamente.",
+      });
+
       obtenerLibros();
     } catch (error) {
-      console.error("Error al eliminar libro:", error);
+      console.error(error);
+
+      setMensaje({
+        tipo: "error",
+        texto: "No fue posible eliminar el libro.",
+      });
     }
   };
 
@@ -333,7 +348,7 @@ function App() {
                         {libro.estado === "Disponible" ? "Prestar" : "Devolver"}
                       </button>
 
-                      <button className="action-delete" onClick={() => eliminarLibro(libro.id)}>
+                      <button className="action-delete" onClick={() => confirmarEliminar(libro)}>
                         <Trash2 size={15} />
                         Eliminar
                       </button>
@@ -389,6 +404,49 @@ function App() {
             </div>
           </div>
         )}
+
+        {libroEliminar && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+
+              <div className="modal-header">
+                <h2>Eliminar libro</h2>
+              </div>
+
+              <p>
+                ¿Seguro que deseas eliminar
+                <strong> {libroEliminar.titulo}</strong>?
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  marginTop: "25px",
+                }}
+              >
+
+                <button
+                  className="secondary-button"
+                  onClick={() => setLibroEliminar(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="primary-button"
+                  onClick={eliminarLibro}
+                >
+                  Eliminar
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        
     </main>
   );
 }
